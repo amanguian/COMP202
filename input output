@@ -1,0 +1,95 @@
+def get_iso_codes_by_continent(filename):
+    """(str) -> dict
+ 
+    The function returns a dictionary mapping continents names (all upper case) to a list of ISO codes (strings)
+    of countries that belongs to that continent.
+    
+    >>> d = get_iso_codes_by_continent("iso_codes_by_continent.tsv")
+    >>> len(d['SOUTH AMERICA'])
+    12
+    >>> d['ASIA'][5]
+    'ARE'
+    >>> len(d['ASIA'])
+    50
+    """
+    
+    file = open(filename, "r", encoding="utf-8")
+    
+    dict_continents = {}
+    
+    for line in file:
+        line_list = line.split()
+        if len(line_list) == 3:
+            line_list = [line_list[0], " ".join(line_list[1:])] #so that we don't get any errors with South and North america  
+        
+        if line_list[1].upper() not in dict_continents:
+            dict_continents[line_list[1].upper()] = [line_list[0]]
+            
+        else:
+            dict_continents[line_list[1].upper()].append(line_list[0])
+            
+    file.close()
+            
+    return dict_continents
+        
+ 
+def add_continents_to_data(input_filename, continents_filename, output_filename):
+    """(str, str, str) -> int
+    
+    The function will read the input_filename, make changes to each of the
+    lines and write the new version to output_filename.
+    The only change that should happen to the data is that in the output file a column should be added
+    with the continent to which each country belongs.
+    The function should return an integer indicating the number of lines written to output_filename.
+    
+    
+    >>> add_continents_to_data("small_clean_co2_data.tsv", "iso_codes_by_continent.tsv", "small_co2_data.tsv")
+    10
+    
+    >>> add_continents_to_data("large_clean_co2_data.tsv", "iso_codes_by_continent.tsv", "large_co2_data.tsv")
+    17452
+ 
+    """
+    input_file = open(input_filename, "r", encoding="utf-8")
+    output_file = open(output_filename, "w", encoding="utf-8")
+    
+    dict_continents = get_iso_codes_by_continent(continents_filename)
+    
+    
+    lines = 0
+    for line in input_file:
+        lines += 1
+        list_line = line.split('\t')
+        code_country = list_line[0]
+        string_continent = ""
+        
+        for continent in dict_continents:
+            if code_country in dict_continents[continent]:
+                if string_continent == "":
+                    string_continent += continent
+                    
+                else:
+                    string_continent += "," + continent
+                
+                
+        
+        list_line.insert(2, string_continent)
+    
+    
+        string_to_write = "" #same reasoning as data_cleanup, we break the line into a list and reatach it in a string that we wanna write
+        for i in range(len(list_line)):
+            if i == len(list_line)-1:
+                string_to_write += list_line[i]
+            else:
+                string_to_write += list_line[i] + '\t'
+    
+    
+    
+        output_file.write(string_to_write)
+    
+ 
+    
+    input_file.close()
+    output_file.close()
+    
+    return lines
