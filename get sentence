@@ -1,0 +1,203 @@
+from similarity_measures import *
+ 
+ 
+def get_sentences(text):
+    """(str) -> list
+    Given a string returns a list of strings each representing one of the sentences from
+    the input string.
+    
+    >>> t = "?Are you insane !! What happened ? I don't know."
+    >>> get_sentences(t)
+    ['Are you insane', 'What happened', "I don't know"]
+    
+    >>> t = "??Are y?ou i.nsane !! What happ??ened ? I don't   know."
+    >>> get_sentences(t)
+    ['Are y', 'ou i', 'nsane', 'What happ', 'ened', "I don't   know"]
+    
+    
+    >>> t = "Are you insane? Of course I want to leave the Dursleys! Have you got a house? When can I move in?"
+    >>> get_sentences(t)
+    ['Are you insane', 'Of course I want to leave the Dursleys', 'Have you got a house', 'When can I move in']
+    
+    
+    >>> t = "Are you insane"
+    >>> get_sentences(t)
+    ['Are you insane']
+    
+    
+    """
+    
+    
+    punctuation = [".", "?", "!"]
+    
+    list_sentences = []
+    list_characters= []
+    
+    for character in text:
+        if character in punctuation:
+            sentence = "".join(list_characters)
+            list_sentences += [sentence.strip(" ")] #so that we append sentences that do not begin nor end with a space character
+            list_characters = []
+            continue
+            
+            
+        else:
+            list_characters += character
+    
+    
+    if len(list_characters) != 0:                    #This is to get the sentences that maybe don't have any punctuation, it's very important
+        sentence = "".join(list_characters)
+        list_sentences += [sentence.strip(" ")]
+    
+    
+    
+    
+    while "" in list_sentences:            #so that we don't get sentences that are only spaces
+        list_sentences.remove("")
+        
+        
+    return list_sentences
+ 
+ 
+ 
+ 
+ 
+def get_word_breakdown(text): 
+    """(str) -> list
+ 
+    Given a string returns a 2D lists of strings. Each sublist contains a strings
+    representing words from each sentence.
+    
+    >>> text = "All the ha-:bits of - Man are ev:il. And, abov;;e all, no animal"
+    >>> get_word_breakdown(text)
+    [['all', 'the', 'ha', 'bits', 'of', 'man', 'are', 'ev', 'il'], ['and', 'abov', 'e', 'all', 'no', 'animal']]
+    
+    >>> text = "All the habits of -- Man are ev:il. And, abov;;e all, no animal."
+    >>> get_word_breakdown(text)
+    [['all', 'the', 'habits', 'of', 'man', 'are', 'ev', 'il'], ['and', 'abov', 'e', 'all', 'no', 'animal']]
+    
+    >>> text = "All the habits of Man are evil. And, above all, no animal must ever tyrannise over his \
+    own kind. Weak or strong, clever or simple, we are all brothers. No animal must ever kill \
+    any other animal. All animals are equal."
+    >>> get_word_breakdown(text)
+    [['all', 'the', 'habits', 'of', 'man', 'are', 'evil'],
+    ['and', 'above', 'all', 'no', 'animal', 'must', 'ever', 'tyrannise', 'over', 'his', 'own', 'kind'],
+    ['weak', 'or', 'strong', 'clever', 'or', 'simple', 'we', 'are', 'all', 'brothers'],
+    ['no', 'animal', 'must', 'ever', 'kill', 'any', 'other', 'animal'],
+    ['all', 'animals', 'are', 'equal']]
+    
+ 
+    >>> text = "didn't"
+    >>> get_word_breakdown(text)
+    [['didn', 't']]
+    
+    >>> text = ""
+    >>> get_word_breakdown(text)
+    []
+    
+    """
+    
+    punctuation_to_erase = [',', '-', '--', ':', ';', '"', "'"]    
+    
+    list_of_words = []
+    
+    list_of_sentences = get_sentences(text)
+    
+    for i in range(len(list_of_sentences)):
+        list_of_sentences[i] = list_of_sentences[i].lower() #to get all the sentences in lowercase
+    
+    for sentence in list_of_sentences:
+        list_of_words.append(sentence.split()) #2D list
+        
+     
+    #now let's deal with the punctuation
+    
+    
+    
+    for words in range(len(list_of_words)):
+        new_list_of_words = [] #let's create another list to append words when there is a punctuation between them
+        for word in list_of_words[words]:
+            
+            list_of_the_word = list(word)
+            for i in range(len(list_of_the_word)):
+                if list_of_the_word[i] in punctuation_to_erase:
+                    list_of_the_word[i] = " " #by replacing the punctuation we want to erase by spaces we divide the strings with split
+            string_to_split = "".join(list_of_the_word)
+            
+            list_good_string = string_to_split.split()
+            for i in list_good_string:
+                new_list_of_words.append(i)
+            
+                    
+        list_of_words[words] = new_list_of_words
+        
+   
+                    
+                    
+    for i in list_of_words:
+        if i == []:                      
+            list_of_words.remove(i) #to erase empty lists
+        while "" in i:            
+            i.remove("")      #so that we don't get empty strings
+                
+       
+       
+   
+    return list_of_words
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+def build_semantic_descriptors_from_files(filenames): 
+    """(list) -> dict
+    
+    given a list of file names (strings) as input returns a
+    dictionary of the semantic descriptors of all the words in the files received as input, with the files
+    treated as a single text.
+    
+    >>> d = build_semantic_descriptors_from_files(['animal_farm.txt', 'alice.txt'])
+    >>> d['clever']
+    {'weak': 1, 'or': 2, 'strong': 1, 'simple': 1, 'we': 1, 'are': 1, 'all': 1, 'brothers': 1, 'there': 1, 'was': 2,
+    'a': 1, 'general': 1, 'clapping': 1, 'of': 1, 'hands': 1, 'at': 1, 'this': 1, 'it': 1, 'the': 2, 'first': 1, 'really': 1,
+    'thing': 1, 'king': 1, 'had': 1, 'said': 1, 'that': 1, 'day': 1}}
+    
+    >>> d = build_semantic_descriptors_from_files(['animal_farm.txt', 'alice.txt'])
+    >>> d['weak']
+    {'or': 2, 'strong': 1, 'clever': 1, 'simple': 1, 'we': 1, 'are': 1, 'all': 1, 'brothers': 1}
+    
+    
+    >>> d = build_semantic_descriptors_from_files(['animal_farm.txt', 'alice.txt'])
+    >>> len(d['man'])
+    21
+    
+    
+    >>> d = build_semantic_descriptors_from_files(['animal_farm.txt', 'alice.txt'])
+    >>> d['you']
+    {'if': 1, 'didn': 1, 't': 1, 'sign': 1, 'it': 1, 'said': 1, 'the': 2, 'king': 1, 'that': 1, 'only': 1, 'makes': 1,
+    'matter': 1, 'worse': 1, 'must': 1, 'have': 2, 'meant': 1, 'some': 1, 'mischief': 1, 'or': 1, 'else': 1, 'you’d': 1,
+    'signed': 1, 'your': 1, 'name': 1, 'like': 1, 'an': 1, 'honest': 1, 'man': 1}
+    
+    """
+    
+    text_file = "" #empty string that will have all the different texts
+    for file in filenames:
+        doc = open(file, "r", encoding="utf-8")
+        
+        
+        for line in doc:
+            text_file += line
+            
+        doc.close()
+ 
+    list_2d_words = get_word_breakdown(text_file) #now that we have all the words in a list we want to do it's dictionnary
+        
+    
+        
+    dict_semantic = get_all_semantic_descriptors(list_2d_words)    
+        
+        
+    return dict_semantic
