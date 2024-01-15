@@ -1,2 +1,1 @@
-# Comp202
-top assignments python
+Most advanced drawing technique in python
